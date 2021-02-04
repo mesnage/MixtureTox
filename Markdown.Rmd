@@ -1,0 +1,1227 @@
+---
+title: "COMMSBIO"
+output: html_document
+---
+
+# Load the packages used to make this statistical analysis
+
+```{r load the packages}
+library(qvalue)
+library(dplyr)
+library(ggplot2)
+library(ropls)
+library(readxl)
+library(ALDEx2)
+library(tximport)
+library(GenomicFeatures)
+library(readr)
+library(tidyr)
+library(Biobase)
+library(goseq)
+library(org.Hs.eg.db)
+library(org.Rn.eg.db)
+library(phyloseq)
+library(methylKit)
+library(genomation)
+library(circlize)
+library(ggridges)
+library(gridExtra)
+library(DESeq2)
+library(kableExtra)
+```
+
+# Water consumption
+
+The daily water consumption per cage was measured before the start of the experiment, and weekly for all the duration of the treatment (13 weeks). Before the final sacrifice and after about 16 hours in metabolic cage, water consumption, was registered for each animal. The means of individual consumptions and related standard deviation were calculated for every group and for sex. 
+
+Raw data for water consumption is available as File S2
+
+```{r analysis of water consumption}
+# Load the metadata file containing the rat identification numbers
+mixture_metadata  <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S01.csv')
+
+# Load the raw data for water consumption
+raw_water_consumption <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S02.csv')
+
+# Add a column for the group labels
+water <- data.frame(group = factor(c("CONT", "CONT", "CONT", "CONT", "MIX", "MIX", "MIX", "MIX")), raw_water_consumption[,-1])
+
+# Calculate averages of water consumption
+averages <- vector() 
+for (i in c(2:15)){
+  average <- tapply(water[,i], water$group, FUN=mean)
+  average <- as.data.frame(average)
+  averages <- append(averages, average)}
+
+# Add a raw for the number of weeks 
+water_averages <- dplyr::bind_cols(list(averages))
+colnames(water_averages) <- colnames(water[,c(2:15)])
+
+# Format for the figure
+water_averages <- rbind(water_averages, c(1:14))
+water_averages <- as.data.frame(t(water_averages))
+
+# Plot the figure 
+ggplot() + 
+  geom_point(data = water_averages, aes(V3, V1), color = "black") + 
+  geom_smooth(data = water_averages, aes(V3, V1), color = "black",  size = 0.5, method = 'loess', se = TRUE, alpha = 0.2) + ylim(10,35) +
+  geom_point(data = water_averages, aes(V3, V2), color = "firebrick") + 
+  geom_smooth(data = water_averages, aes(V3, V2, size = 0.1), linetype = 1, color = "firebrick", fill = "firebrick", size = 0.5, method = 'loess', alpha = 0.2) +
+  xlab("Week of treatment") + ylab("Water consumption (ml)") + theme_classic() 
+
+
+```
+
+# Food consumption
+
+The daily food consumption per cage was measured before the start of the experiment, and weekly for all the duration of the treatment (13 weeks). Before the final sacrifice and after about 16 hours in metabolic cage, water consumption, was registered for each animal. The means of individual consumptions and related standard deviation were calculated for every group and for sex.
+
+Raw data for food consumption is available as File S3.
+
+```{r analysis of food consumption}
+# Load the metadata file containing the rat identification numbers
+mixture_metadata  <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S01.csv')
+
+# Load the raw data for food consumption
+raw_feed_consumption <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S03.csv')
+
+# Add a column for the group labels
+feed <- data.frame(group = factor(c("CONT", "CONT", "CONT", "CONT", "MIX", "MIX", "MIX", "MIX")), raw_feed_consumption[,-1])
+
+# Calculate averages of food consumption
+averages <- vector() 
+for (i in c(2:15)){
+  average <- tapply(feed[,i], feed$group, FUN=mean)
+  average <- as.data.frame(average)
+  averages <- append(averages, average)}
+
+# Add a raw for the number of weeks 
+feed_averages <- dplyr::bind_cols(list(averages))
+colnames(feed_averages) <- colnames(feed[,c(2:15)])
+
+# Format for the figure
+feed_averages <- rbind(feed_averages, c(1:14))
+feed_averages <- as.data.frame(t(feed_averages))
+
+# Plot the figure 
+ggplot() + 
+  geom_point(data = feed_averages, aes(V3, V1), color = "black") + 
+  geom_smooth(data = feed_averages, aes(V3, V1), color = "black",  size = 0.5, method = 'loess', se = TRUE, alpha = 0.2) + ylim(10,30) +
+  geom_point(data = feed_averages, aes(V3, V2), color = "firebrick") + 
+  geom_smooth(data = feed_averages, aes(V3, V2, size = 0.1), linetype = 1, color = "firebrick", fill = "firebrick", size = 0.5, method = 'loess', alpha = 0.2) +
+  xlab("Week of treatment") + ylab("Feed consumption (g)") + theme_classic() 
+
+```
+
+# Body weights
+
+Body weight of experimental animals was measured before the start of the treatment, and then weekly for 13 weeks. All the experimental animals were weighted just before the sacrifice. Average body weights and related standard deviations were calculated for each experimental group.
+
+Raw data for food consumption is available as File S4
+
+```{r analysis of body weights}
+# Load the metadata file containing the rat identification numbers
+raw_weights <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S04.csv')
+
+# Load the raw data for body weights
+raw_weights <- data.frame(Group = mixture_metadata$Group, raw_weights[,-1])
+
+# Calculate averages
+averages <- vector() 
+for (i in c(2:15)){
+  average <- tapply(raw_weights[,i], raw_weights$Group, FUN=mean)
+  average <- as.data.frame(average)
+  averages <- append(averages, average)}
+
+# Add a raw for the number of weeks
+weights_averages <- dplyr::bind_cols(list(averages))
+colnames(weights_averages) <- colnames(raw_weights[,c(2:15)])
+
+# Format for the figure
+weights_averages <- rbind(weights_averages, c(1:14))
+weights_averages <- as.data.frame(t(weights_averages))
+
+# Plot the figure 
+ggplot() + 
+  geom_point(data = weights_averages, aes(V3, V1), color = "black") + 
+  geom_smooth(data = weights_averages, aes(V3, V1), color = "black",  size = 0.5, method = 'loess', se = TRUE, alpha = 0.2) + ylim(180,350) +
+  geom_point(data = weights_averages, aes(V3, V2), color = "firebrick") + 
+  geom_smooth(data = weights_averages, aes(V3, V2, size = 0.1), linetype = 1, color = "firebrick", fill = "firebrick", size = 0.5, method = 'loess', alpha = 0.2) +
+  xlab("Week of treatment") + ylab("Mean weight (g)") + theme_classic() 
+```
+
+# Serum biochemistry
+
+Serum biochemistry was performed under contract by IDEXX BioAnalytics (Stuttgart, Germany), an ISO 17025 accredited laboratory. Briefly, sodium and potassium levels were measured by indirect potentiometry. Albumin was measured by a photometric bromocresol green test. ALP was measured by IFCC with AMP-buffer method, glucose by Enzymatic UV-Test (hexokinase method), cholesterol by Enzymatic color test (CHOD-PAP), blood urea nitrogen by enzymatic UV-Test, gamma-glutamyl-transferase by Kinetic color test International Federation of Clinical Chemistry (IFCC), aspartate and alanine aminotransferase by kinetic UV-test (IFCC+ pyridoxal-5-phosphate), creatinine by kinetic color test (Jaffe’s method), lactate dehydrogenase by IFCC method, and triglycerides using an enzymatic color test (GPO-PAP) on a Beckman Coulter AU 480.
+
+Raw data for food consumption is available as File S5
+
+
+```{r analysis of serum biochemistry}
+# Load the raw data for the serum biochemistry values
+biochemistry <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S05.csv')
+
+# Add the metadata
+biochemistry <- dplyr::inner_join(mixture_metadata, biochemistry, by = 'Biochemistry_ID')
+
+# Correct the number format for GGT
+biochemistry$GGT <- as.numeric(biochemistry$GGT)
+
+# Make the statistical analysis
+pairwise.wilcox.test(biochemistry$Albumin, biochemistry$Group,  paired = FALSE, p.adjust.method = "BH")
+pairwise.wilcox.test(biochemistry$Alkaline.phosphatase, biochemistry$Group,  paired = FALSE, p.adjust.method = "BH")
+pairwise.wilcox.test(biochemistry$ALT..GPT., biochemistry$Group,  paired = FALSE, p.adjust.method = "BH")
+pairwise.wilcox.test(biochemistry$AST..GOT., biochemistry$Group,  paired = FALSE, p.adjust.method = "BH")
+pairwise.wilcox.test(biochemistry$Cholesterol, biochemistry$Group,  paired = FALSE, p.adjust.method = "BH")
+pairwise.wilcox.test(biochemistry$Creatinine, biochemistry$Group,  paired = FALSE, p.adjust.method = "BH")
+pairwise.wilcox.test(biochemistry$GGT, biochemistry$Group,  paired = FALSE, p.adjust.method = "BH")
+pairwise.wilcox.test(biochemistry$LDH, biochemistry$Group,  paired = FALSE, p.adjust.method = "BH")
+pairwise.wilcox.test(biochemistry$Potassium, biochemistry$Group,  paired = FALSE, p.adjust.method = "BH")
+pairwise.wilcox.test(biochemistry$Sodium, biochemistry$Group,  paired = FALSE, p.adjust.method = "BH")
+pairwise.wilcox.test(biochemistry$Urea..BUN., biochemistry$Group,  paired = FALSE, p.adjust.method = "BH")
+pairwise.wilcox.test(biochemistry$Triglycerides, biochemistry$Group,  paired = FALSE, p.adjust.method = "BH")
+
+# Make the plots, one for each marker
+A <- ggplot(biochemistry, aes(x=Group, y=Albumin, fill =Group, color=Group)) + geom_boxplot(outlier.shape = NA, alpha = 0.3) + 
+  geom_jitter(shape=16, position=position_jitter(0.2)) + ggtitle('p = 0.07') + ylab("Albumin (g/l)") + 
+  scale_fill_manual(values=c("grey", "firebrick")) + scale_color_manual(values=c("black", "firebrick")) + 
+  theme_classic() + theme(axis.text.x = element_text(angle = 90), legend.position = "none",axis.title.x = element_blank())
+
+B <- ggplot(biochemistry, aes(x=Group, y=Alkaline.phosphatase, fill =Group, color=Group)) + geom_boxplot(outlier.shape = NA, alpha = 0.3) + 
+  geom_jitter(shape=16, position=position_jitter(0.2)) + ggtitle('p = 0.09') + ylab("ALP (U/l)") + 
+  scale_fill_manual(values=c("grey", "firebrick")) + scale_color_manual(values=c("black", "firebrick")) + 
+  theme_classic() + theme(axis.text.x = element_text(angle = 90), legend.position = "none",axis.title.x = element_blank())
+
+C <- ggplot(biochemistry, aes(x=Group, y=ALT..GPT., fill =Group, color=Group)) + geom_boxplot(outlier.shape = NA, alpha = 0.3) + 
+  geom_jitter(shape=16, position=position_jitter(0.2)) + ggtitle('p = 0.05') + ylab('ALT (U/L)') +
+  scale_fill_manual(values=c("grey", "firebrick")) + scale_color_manual(values=c("black", "firebrick")) + 
+  theme_classic() + theme(axis.text.x = element_text(angle = 90), legend.position = "none",axis.title.x = element_blank())
+
+D <- ggplot(biochemistry, aes(x=Group, y=AST..GOT., fill =Group, color=Group)) + geom_boxplot(outlier.shape = NA, alpha = 0.3) + 
+  geom_jitter(shape=16, position=position_jitter(0.2)) + ggtitle('p = 0.17') + ylab('AST (U/l)') +
+  scale_fill_manual(values=c("grey", "firebrick")) + scale_color_manual(values=c("black", "firebrick")) + 
+  theme_classic() + theme(axis.text.x = element_text(angle = 90), legend.position = "none",axis.title.x = element_blank())
+
+E <- ggplot(biochemistry, aes(x=Group, y=Cholesterol, fill =Group, color=Group)) + geom_boxplot(outlier.shape = NA, alpha = 0.3) + 
+  geom_jitter(shape=16, position=position_jitter(0.2)) + ggtitle('p = 0.73') + ylab("Cholesterol (mmol/l)") + 
+  scale_fill_manual(values=c("grey", "firebrick")) + scale_color_manual(values=c("black", "firebrick")) + 
+  theme_classic() + theme(axis.text.x = element_text(angle = 90), legend.position = "none",axis.title.x = element_blank())
+
+F <- ggplot(biochemistry, aes(x=Group, y=Creatinine, fill =Group, color=Group)) + geom_boxplot(outlier.shape = NA, alpha = 0.3) + 
+  geom_jitter(shape=16, position=position_jitter(0.2)) + ggtitle('p = 0.01') + ylab("Creatinine (µmol/l)")  +
+  scale_fill_manual(values=c("grey", "firebrick")) + scale_color_manual(values=c("black", "firebrick")) + 
+  theme_classic() + theme(axis.text.x = element_text(angle = 90), legend.position = "none",axis.title.x = element_blank())
+
+G <- ggplot(biochemistry, aes(x=Group, y=GGT, fill =Group, color=Group)) + geom_boxplot(outlier.shape = NA, alpha = 0.3) + 
+  geom_jitter(shape=16, position=position_jitter(0.2)) + ggtitle('p = 0.4') + ylab("GGT (U/l)") +
+  scale_fill_manual(values=c("grey", "firebrick")) + scale_color_manual(values=c("black", "firebrick")) + 
+  theme_classic() + theme(axis.text.x = element_text(angle = 90), legend.position = "none",axis.title.x = element_blank())
+
+H <- ggplot(biochemistry, aes(x=Group, y=LDH, fill =Group, color=Group))+ geom_boxplot(outlier.shape = NA, alpha = 0.3) + 
+  geom_jitter(shape=16, position=position_jitter(0.2)) + ggtitle('p = 0.26') + ylab("LDH (U/l)") +
+  scale_fill_manual(values=c("grey", "firebrick")) + scale_color_manual(values=c("black", "firebrick")) + 
+  theme_classic() + theme(axis.text.x = element_text(angle = 90), legend.position = "none",axis.title.x = element_blank())
+
+I <- ggplot(biochemistry, aes(x=Group, y=Potassium, fill =Group, color=Group)) + geom_boxplot(outlier.shape = NA, alpha = 0.3) + 
+  geom_jitter(shape=16, position=position_jitter(0.2)) + ggtitle('p = 0.09') + ylab("Potassium (mmol/l)") + 
+  scale_fill_manual(values=c("grey", "firebrick")) + scale_color_manual(values=c("black", "firebrick")) + 
+  theme_classic() + theme(axis.text.x = element_text(angle = 90), legend.position = "none",axis.title.x = element_blank())
+
+J <- ggplot(biochemistry, aes(x=Group, y=Sodium, fill =Group, color=Group)) + geom_boxplot(outlier.shape = NA, alpha = 0.3) + 
+  geom_jitter(shape=16, position=position_jitter(0.2)) + ggtitle('p = 0.1') + ylab("Sodium (mmol/l)") + 
+  scale_fill_manual(values=c("grey", "firebrick")) + scale_color_manual(values=c("black", "firebrick")) + 
+  theme_classic() + theme(axis.text.x = element_text(angle = 90), legend.position = "none",axis.title.x = element_blank())
+
+K <- ggplot(biochemistry, aes(x=Group, y=Urea..BUN., fill =Group, color=Group)) + geom_boxplot(outlier.shape = NA, alpha = 0.3) + 
+  geom_jitter(shape=16, position=position_jitter(0.2)) + ggtitle('p = 0.1') + ylab('BUN (mmol/l)') +
+  scale_fill_manual(values=c("grey", "firebrick")) + scale_color_manual(values=c("black", "firebrick")) + 
+  theme_classic() + theme(axis.text.x = element_text(angle = 90), legend.position = "none",axis.title.x = element_blank())
+
+L <- ggplot(biochemistry, aes(x=Group, y=Triglycerides, fill =Group, color=Group)) + geom_boxplot(outlier.shape = NA, alpha = 0.3) + 
+  geom_jitter(shape=16, position=position_jitter(0.2)) + ggtitle('p = 1') + ylab("Triglycerides (mmol/l)") + 
+  scale_fill_manual(values=c("grey", "firebrick")) + scale_color_manual(values=c("black", "firebrick")) + 
+  theme_classic() + theme(axis.text.x = element_text(angle = 90), legend.position = "none",axis.title.x = element_blank())
+
+# Print the plots as 2 rows of 6 panels
+lay <- rbind(c(1,2,3,4,5,6), c(7,8,9,10,11,12))
+grid.arrange(A,B,C,D,E,F,G,H,I,J,K,L, layout_matrix = lay)
+
+```
+
+# Serum metabolomics
+
+Serum Metabolomics analysis was conducted under contract with Metabolon Inc. (Durham, NC, USA) on four independent instrument platforms as previously described: two different separate reverse phase ultrahigh performance liquid chromatography-tandem mass spectroscopy analysis (RP/UPLC-MS/MS) with positive ion mode electrospray ionization (ESI), a RP/UPLC-MS/MS with negative ion mode ESI, as well as by hydrophilic-interaction chromatography (HILIC)/UPLC-MS/MS with negative ion mode ESI.
+
+The raw data for the peak intensity is available as File S10
+The metadata describing annotation, mass and RI is available as File S9
+The scaled and imputed data is available as File S11.
+
+The results are available as File S12
+
+Scaled and imputed peak area values were log transformed, and statistical significance determined using a Welch’s two-sample t-test adjusted for multiple comparisons with FDR methods using the R package ‘qvalue’. 
+
+The hypergeometric P-values were computed using the R package Hypergeo
+
+The raw data is available in Metabolights, with the accession number MTBLS138 (https://www.ebi.ac.uk/metabolights/MTBLS138).
+
+We also used orthogonal partial least squares discriminant analysis (OPLS-DA) to evaluate the predictive ability of each omics approach. The R package ropls version 1.20.0 was used. This algorithm uses the nonlinear iterative partial least squares algorithm (NIPALS). Since PLS-DA methods are prone to overfitting, we assessed the significance of our classification using permutation tests (permuted 1,000 times).
+
+```{r analysis of serum metabolomics}
+# Load the metadata file containing the rat identification numbers
+mixture_metadata  <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S01.csv')
+
+# Load the scaled and imputed dataset, raw values are also available as indicated above
+mixture_norm_serum <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S11.csv', row.names = 1)
+mixture_norm_serum <- t(mixture_norm_serum)
+
+# Calculate ratios before log 10 transformation
+fold_change <- data.frame(BIOCHEMICAL = colnames(mixture_norm_serum),
+                    ratio = abs(colMeans(mixture_norm_serum[11:20,])/colMeans(mixture_norm_serum[1:10,])))
+fold_change$fold_change <- ifelse(fold_change$ratio < 1, -1/fold_change$ratio * 2, fold_change$ratio)
+
+# Transformation
+mixture_norm_serum <- log10(mixture_norm_serum)
+
+# OPLS-DA
+labels <- as.factor(mixture_metadata[-c(11,12,23,24), 2])
+serum_mixture.oplsda <- opls(mixture_norm_serum, labels, predI = 1, orthoI = NA, permI = 1000)
+vipVn_serum <- data.frame(BIOCHEMICAL = colnames(mixture_norm_serum), VIP = getVipVn(serum_mixture.oplsda))
+
+# Loop to perform pairwise statistics and populate a table with the p-values
+P_value <- vector() ; outcome_list <- vector()
+for (i in c(1:ncol(mixture_norm_serum)))
+{
+  outcome <- colnames(mixture_norm_serum)[i]
+  res.aov <- t.test(get(outcome) ~ labels, data = mixture_norm_serum)$p.value
+  P_value <- rbind(P_value, res.aov)
+  outcome_list <- append(outcome_list, outcome)
+}
+P_value <- as.numeric(P_value)
+anova_table_serum <- data.frame(BIOCHEMICAL = outcome_list, P_value)
+
+# P-value adjustment using the FDR method
+anova_table_serum$qvalues <- qvalue::qvalue(anova_table_serum$P_value)$qvalues
+
+# Add the metadata
+table_metadata_metabolites_serum <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S09.csv')
+anova_table_serum <- dplyr::left_join(table_metadata_metabolites_serum, anova_table_serum, by = 'BIOCHEMICAL') 
+
+# Add the fold changes
+anova_table_serum <- dplyr::left_join(anova_table_serum, fold_change, by = 'BIOCHEMICAL') 
+anova_table_serum <- dplyr::left_join(anova_table_serum, vipVn_serum, by = 'BIOCHEMICAL') 
+
+# Filter the results
+Table2_serum <- anova_table_serum[anova_table_serum$VIP > 2,]
+Table2_serum <- dplyr::select(Table2_serum[,-1], BIOCHEMICAL, SUB_PATHWAY, fold_change, P_value, qvalues, VIP)
+
+Table2_serum %>%
+  kbl(caption = "Table 2. Serum metabolomics of host-gut microbiota interactions in rats exposed to a pesticide mixture reveals alterations in multiple metabolic pathways. We presented fold changes (FC) for the metabolites which were found to have their variable importance in projection (VIP) scores > 2 in the OPLS-DA analyses ") 
+
+```
+
+```{r pathway enrichement of serum metabolomics}
+# Enrichment analysis
+# m = total number of metabolites measured for the given pathway
+pathways <- as.data.frame(table(anova_table_serum$SUB_PATHWAY))
+colnames(pathways)[2] <- 'm'
+
+# x = number of metabolites disturbed for the given pathway
+significant <- subset(anova_table_serum, VIP > 2)
+significant <- as.data.frame(table(significant$SUB_PATHWAY))
+enrichement <- dplyr::left_join(pathways, significant, by = 'Var1')
+colnames(enrichement)[3] <- 'x'
+
+# k = total number of metabolites having their levels altered for all pathways
+enrichement$k <- sum(significant$Freq)
+
+# n = Number of "non-marked" elements, i.e. metabolites not associated to this pathway
+enrichement$n <- length(anova_table_serum$SUB_PATHWAY) - enrichement$m
+
+# N = total number of metabolites measured
+enrichement$N <- length(anova_table_serum$SUB_PATHWAY)
+
+# exp.x = number of significant metabolites expected by chance
+enrichement <-  dplyr::mutate(enrichement, exp.x =  k * (m/N))
+
+# fold.enrichment = (x / k ) / (m / N)
+enrichement <-  dplyr::mutate(enrichement, fold.enrichment = (x / k ) / (m/N))
+
+# https://www.pathwaycommons.org/guide/primers/statistics/fishers_exact_test/
+# http://pedagogix-tagc.univ-mrs.fr/courses/ASG1/practicals/go_statistics_td/go_statistics_td_2015.html
+
+# Computing the hypergeometric P-value
+# The P-value is the probability to observe at least “x” marked balls in the selection.
+# Compute the P-value for the observed number of marked elements in the selection
+enrichement <- dplyr::mutate(enrichement, p.value = phyper(q=x -1, m=m, n=n, k=k, lower.tail=FALSE))
+
+enrichement <- enrichement[enrichement$p.value < 0.05,]
+enrichement <- enrichement[!is.na(enrichement$Var1),]
+
+
+enrichement %>%
+  kbl(caption = "Pathway enrichement in serum metanbolome") 
+
+```
+
+# Caecum metabolomics
+
+Caecum Metabolomics analysis was conducted under contract with Metabolon Inc. (Durham, NC, USA) on four independent instrument platforms as previously described: two different separate reverse phase ultrahigh performance liquid chromatography-tandem mass spectroscopy analysis (RP/UPLC-MS/MS) with positive ion mode electrospray ionization (ESI), a RP/UPLC-MS/MS with negative ion mode ESI, as well as by hydrophilic-interaction chromatography (HILIC)/UPLC-MS/MS with negative ion mode ESI.
+
+The raw data for the peak intensity is available as File S7
+The metadata describing annotation, mass and RI is available as File S6
+The scaled and imputed data is available as File S8.
+
+Results are available as file S13
+
+Scaled and imputed peak area values were log transformed, and statistical significance determined using a Welch’s two-sample t-test adjusted for multiple comparisons with FDR methods using the R package ‘qvalue’.
+
+The hypergeometric P-values were computed using the R package Hypergeo.
+
+The raw data is available in Metabolights, with the accession number MTBLS138 (https://www.ebi.ac.uk/metabolights/MTBLS138).
+
+We also used orthogonal partial least squares discriminant analysis (OPLS-DA) to evaluate the predictive ability of each omics approach. The R package ropls version 1.20.0 was used. This algorithm uses the nonlinear iterative partial least squares algorithm (NIPALS). Since PLS-DA methods are prone to overfitting, we assessed the significance of our classification using permutation tests (permuted 1,000 times).
+
+
+```{r analysis of caecum metabolomics}
+# Load the metadata file containing the rat identification numbers
+mixture_metadata  <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S01.csv')
+
+# Load the scaled and imputed dataset, raw values are also available as indicated above
+mixture_norm_caecum <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S08.csv', row.names = 1)
+mixture_norm_caecum <- t(mixture_norm_caecum)
+
+# Calculate ratios before log 10 transformation
+fold_change <- data.frame(BIOCHEMICAL = colnames(mixture_norm_caecum),
+                    ratio = abs(colMeans(mixture_norm_caecum[11:20,])/colMeans(mixture_norm_caecum[1:10,])))
+fold_change$fold_change <- ifelse(fold_change$ratio < 1, -1/fold_change$ratio * 2, fold_change$ratio)
+
+# Transformation
+mixture_norm_caecum <- log10(mixture_norm_caecum)
+
+# OPLS-DA
+labels <- as.factor(mixture_metadata[-c(11,12,23,24), 2])
+caecum_mixture.oplsda <- opls(mixture_norm_caecum, labels, predI = 1, orthoI = NA, permI = 1000)
+vipVn_caecum <- data.frame(BIOCHEMICAL = colnames(mixture_norm_caecum), VIP = getVipVn(caecum_mixture.oplsda))
+
+# Loop to perform pairwise statistics and populate a table with the p-values
+P_value <- vector() ; outcome_list <- vector()
+for (i in c(1:ncol(mixture_norm_caecum)))
+{
+  outcome <- colnames(mixture_norm_caecum)[i]
+  res.aov <- t.test(get(outcome) ~ labels, data = mixture_norm_caecum)$p.value
+  P_value <- rbind(P_value, res.aov)
+  outcome_list <- append(outcome_list, outcome)
+}
+P_value <- as.numeric(P_value)
+anova_table_caecum <- data.frame(BIOCHEMICAL = outcome_list, P_value)
+
+# P-value adjustment using the FDR method
+anova_table_caecum$qvalues <- qvalue::qvalue(anova_table_caecum$P_value)$qvalues
+
+# Add the metadata
+table_metadata_metabolites_caecum <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S06.csv')
+anova_table_caecum <- dplyr::left_join(table_metadata_metabolites_caecum, anova_table_caecum, by = 'BIOCHEMICAL') 
+
+# Add the fold changes
+anova_table_caecum <- dplyr::left_join(anova_table_caecum, fold_change, by = 'BIOCHEMICAL') 
+anova_table_caecum <- dplyr::left_join(anova_table_caecum, vipVn_caecum, by = 'BIOCHEMICAL') 
+
+# Filter the results
+Table2_caecum <- anova_table_caecum[anova_table_caecum$VIP > 2,]
+Table2_caecum <- dplyr::select(Table2_caecum[,-1], BIOCHEMICAL, SUB_PATHWAY, fold_change, P_value, qvalues, VIP)
+
+Table2_caecum %>%
+  kbl(caption = "Table 2. Caecum metabolomics of host-gut microbiota interactions in rats exposed to a pesticide mixture reveals alterations in multiple metabolic pathways. We presented fold changes (FC) for the metabolites which were found to have their variable importance in projection (VIP) scores > 2 in the OPLS-DA analyses ")
+
+
+```
+
+```{r pathway enrichement of caecum metabolomics}
+# Enrichment analysis
+# m = total number of metabolites measured for the given pathway
+pathways <- as.data.frame(table(anova_table_caecum$SUB_PATHWAY))
+colnames(pathways)[2] <- 'm'
+
+# x = number of metabolites disturbed for the given pathway
+significant <- subset(anova_table_caecum, VIP > 2)
+significant <- as.data.frame(table(significant$SUB_PATHWAY))
+enrichement <- dplyr::left_join(pathways, significant, by = 'Var1')
+colnames(enrichement)[3] <- 'x'
+
+# k = total number of metabolites having their levels altered for all pathways
+enrichement$k <- sum(significant$Freq)
+
+# n = Number of "non-marked" elements, i.e. metabolites not associated to this pathway
+enrichement$n <- length(anova_table_caecum$SUB_PATHWAY) - enrichement$m
+
+# N = total number of metabolites measured
+enrichement$N <- length(anova_table_caecum$SUB_PATHWAY)
+
+# exp.x = number of significant metabolites expected by chance
+enrichement <-  dplyr::mutate(enrichement, exp.x =  k * (m/N))
+
+# fold.enrichment = (x / k ) / (m / N)
+enrichement <-  dplyr::mutate(enrichement, fold.enrichment = (x / k ) / (m/N))
+
+# https://www.pathwaycommons.org/guide/primers/statistics/fishers_exact_test/
+# http://pedagogix-tagc.univ-mrs.fr/courses/ASG1/practicals/go_statistics_td/go_statistics_td_2015.html
+
+# Computing the hypergeometric P-value
+# The P-value is the probability to observe at least “x” marked balls in the selection.
+# Compute the P-value for the observed number of marked elements in the selection
+enrichement <- dplyr::mutate(enrichement, p.value = phyper(q=x -1, m=m, n=n, k=k, lower.tail=FALSE))
+
+enrichement <- enrichement[enrichement$p.value < 0.05,]
+enrichement <- enrichement[!is.na(enrichement$Var1),]
+
+
+enrichement %>%
+  kbl(caption = "Pathway enrichement in caecum metabolome")
+```
+
+# Caecum shotgun metagenomics
+
+Shotgun metagenomics was performed by GenomeScan (Leiden, The Netherlands). The NEBNext® Ultra II FS DNA module (cat# NEB #E7810S/L) and the NEBNext® Ultra II Ligation module (cat# NEB #E7595S/L) were used to process the samples.
+
+The shotgun metagenomics data was pre-processed using the pre-processing package v0.2.2 (https://anaconda.org/fasnicar/preprocessing).  In brief, this package concatenates reads, to remove Illumina adapters, discard low-quality (quality <20 or >2 Ns) or too short reads (< 75bp), remove phiX and rat genome sequences, and finally sorts and splits the reads into R1, R2, and UN sets of reads. 
+
+The raw data are available from the National Center for Biotechnology Information (NCBI), with BioProject accession no. PRJNA609596 (https://www.ncbi.nlm. nih.gov/bioproject/PRJNA609596).
+
+Cleaned shotgun metagenomics reads were then processed for taxonomic and pathway profiling. Since there is no gold standard for computational analyses of shotgun metagenomics, we used a combination of approaches. We inferred the taxonomy with the RefSeq database on the metagenomics RAST server, IGGsearch (iggdb_v1.0.0_gut database),  MetaPhlAn version 3.0 and Kaiju 1.0.1.
+
+IGG species count data table: File S14
+Phylum RefSeq: File S16
+Species RefSeq: File S17
+Kaiju species table: File S19
+Metaphlan3 species table: File S21
+KO level 3 function table: File S23
+KO pathway table: File S25
+
+We used ALDEx version 2 (ALDEx2) for differential (relative) abundance analysis of proportional data 56. Statistical analysis for taxa abundance was performed on a dataset corrected for asymmetry (uneven sequencing depths) using the inter-quartile log-ratio method, which identifies features with reproducible variance. 
+
+IGG statistical analysis with Adlex2: File S15
+Species RefSeq statistical analysis with Adlex2: File S18
+Kaiju statistical analysis with Adlex2: File S20
+KO level 3 statistical analysis with Adlex2: File S24
+KO pathway statistical analysis with Adlex2: File S22
+
+Metaphlan3 statistical analysis was done using a kruskall-wallis test because the data was not counts but relative abundances values.
+
+A multivariate analysis consisting in a non-metric multidimensional scaling (NMDS) plot of Bray-Curtis distances between samples. Statistical significance of the sample clustering was evaluated with a permutational ANOVA (PERMANOVA) analysis on the Bray-Curtis distances with adonis() from vegan v2.4-2.
+
+
+```{r figure 3A phylum composition}
+# Load the phylum profiles determining according to the RefSeq database
+plotdata <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S16.csv')
+
+# Load the metadata file containing the rat identification numbers
+mixture_metadata  <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S01.csv')
+
+# Calculate the total abundance
+plotdata[,c(2:ncol(plotdata))] = apply(plotdata[,c(2:ncol(plotdata))], 2, function(x){x/sum(x)*100})
+plotdata <- t(data.frame(plotdata[,-1], row.names = plotdata$phylum))
+plotdata <- data.frame(condition = mixture_metadata$Group, plotdata)
+
+# Calculate the total abundance for the rare taxa
+plotdata$others <- rowSums(plotdata[,c(10:ncol(plotdata))])
+plotdata <- plotdata[,-c(10:63)]
+
+# Add a column for the rat identification numbers
+plotdata$RID <- row.names(plotdata)
+
+# Format the table in a long format for the use in ggplot2
+plotdata <- reshape2:::melt(plotdata, id = c("RID", "condition"))
+colnames(plotdata) <- c("sample", "var", "variable", "value")
+
+# Plot the figure
+ggplot(data=plotdata, aes(x=sample, y=value, colour=variable, fill = variable)) + 
+  geom_bar(stat="identity", position="stack") + facet_wrap(~var, scales = "free", ncol = 2) +
+  scale_colour_brewer(palette = "Set1")  +
+  scale_fill_brewer(palette = "Set1") + theme_classic() +
+  ylab("total abundance (%)") + 
+  theme(axis.text.x=element_blank(), axis.title.x=element_blank(), legend.position = "right",
+        axis.ticks.x=element_blank())
+
+
+```
+
+```{r figure 3B permanova and beta diversity}
+# Load the metadata file containing the rat identification numbers
+mixture_metadata  <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S01.csv')
+
+# Load the taxa profiles determined with IGGsearch
+raw_metagenome_igg <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S14.csv')
+
+# Format the tables to fit Phyloseq objects requirements
+row.names(raw_metagenome_igg) <- raw_metagenome_igg$X
+taxa <- data.frame(taxa = row.names(raw_metagenome_igg), row.names = row.names(raw_metagenome_igg))
+raw_metagenome_igg <- raw_metagenome_igg[,-1]
+TAX = tax_table(taxa)
+row.names(raw_metagenome_igg) <- taxa_names(TAX)
+OTU = otu_table(as.matrix(raw_metagenome_igg), taxa_are_rows = TRUE)
+samples = sample_data(data.frame(condition = mixture_metadata$Group, id = colnames(raw_metagenome_igg), row.names = colnames(raw_metagenome_igg)))
+physeq <- phyloseq(OTU, TAX, samples)
+
+# Calculate the total abundance
+physeq_metabotype_ra = transform_sample_counts(physeq, function(x){x / sum(x)})
+bray_dist = phyloseq::distance(physeq_metabotype_ra, method="bray", weighted=F)
+vegan::adonis(bray_dist ~ sample_data(physeq_metabotype_ra)$condition, permutations = 10000)
+
+# Transform samples in log
+physeq_metabotype_log <- transform_sample_counts(physeq, function(x) log(1 + x))
+physeq.ord <- ordinate(physeq_metabotype_log, "NMDS", "bray")
+
+# Plot beta diversity by extracting the sample coordinates and plotting them with ggplot2
+plot_beta_diversity <- plot_ordination(physeq_metabotype_log, physeq.ord, color="condition")
+plot_beta_diversity$layers <- plot_beta_diversity$layers[-c(1,2)]
+plot_beta_diversity <- plot_beta_diversity + 
+  theme(aspect.ratio=1) + theme_bw() +  geom_point(size = 1.5, alpha = 0.8, position = "jitter") + 
+  scale_colour_manual(values = c("black", "firebrick")) + scale_fill_manual(values = c("black", "firebrick")) 
+
+plot_beta_diversity
+
+
+```
+
+```{r Analysis of taxonomy composition}
+# Load the metadata file containing the rat identification numbers
+mixture_metadata  <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S01.csv')
+
+# Load the taxa profiles determined with IGGsearch as a table with OTU in columns and samples as rows
+raw_metagenome_igg <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S14.csv')
+raw_metagenome_igg <- data.frame(raw_metagenome_igg[,-1], row.names = raw_metagenome_igg$X)
+raw_metagenome_igg <- as.data.frame(t(raw_metagenome_igg))
+
+# Filter rare taxa
+raw_metagenome_igg[raw_metagenome_igg == 0] <- NA
+raw_metagenome_igg <- raw_metagenome_igg %>% dplyr::select(which(colMeans(is.na(.)) < 0.2))
+raw_metagenome_igg[is.na(raw_metagenome_igg)] <- 0
+raw_metagenome_igg <- t(raw_metagenome_igg)
+
+# Perform Aldex search
+aldex_iggsearch <- ALDEx2::aldex(raw_metagenome_igg, mixture_metadata$Group, mc.samples=128, test="t", effect=TRUE, include.sample.summary=FALSE, denom="iqlr", verbose=FALSE)
+aldex_iggsearch <- aldex_iggsearch[order(aldex_iggsearch$wi.eBH),] 
+aldex_iggsearch <- round(aldex_iggsearch, digits = 2)
+
+head(aldex_iggsearch, 10)  %>%
+  kbl(caption = "IGGsearch OTUs which are the most different between the two groups") 
+
+# Load the taxa profiles determined with RefSeq species  as a table with OTU in columns and samples as rows 
+raw_metagenome_refseq_species <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S17.csv')
+raw_metagenome_refseq_species <- data.frame(raw_metagenome_refseq_species[,-1], row.names = raw_metagenome_refseq_species$species)
+raw_metagenome_refseq_species <- as.data.frame(t(raw_metagenome_refseq_species))
+
+# Filter rare taxa
+raw_metagenome_refseq_species[raw_metagenome_refseq_species == 0] <- NA
+raw_metagenome_refseq_species <- raw_metagenome_refseq_species %>% dplyr::select(which(colMeans(is.na(.)) < 0.2))
+raw_metagenome_refseq_species[is.na(raw_metagenome_refseq_species)] <- 0
+raw_metagenome_refseq_species <- t(raw_metagenome_refseq_species)
+
+# Perform Aldex search
+aldex_refseq_species <- ALDEx2::aldex(raw_metagenome_refseq_species, mixture_metadata$Group, mc.samples=128, test="t", effect=TRUE, include.sample.summary=FALSE, denom="iqlr", verbose=FALSE)
+aldex_refseq_species <- aldex_refseq_species[order(aldex_refseq_species$wi.eBH),] 
+aldex_refseq_species <- round(aldex_refseq_species, digits = 2)
+
+head(aldex_refseq_species, 10) %>%
+  kbl(caption = "RefSeq species which are the most different between the two groups")
+
+# Load the taxa profiles determined with Kaiju as a table with OTU in columns and samples as rows 
+raw_metagenome_kaiju <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S19.csv')
+raw_metagenome_kaiju <- data.frame(raw_metagenome_kaiju[,-1], row.names = raw_metagenome_kaiju$unique)
+raw_metagenome_kaiju <- as.data.frame(t(raw_metagenome_kaiju))
+
+# Filter rare taxa
+raw_metagenome_kaiju[raw_metagenome_kaiju == 0] <- NA
+raw_metagenome_kaiju <- raw_metagenome_kaiju %>% dplyr::select(which(colMeans(is.na(.)) < 0.2))
+raw_metagenome_kaiju[is.na(raw_metagenome_kaiju)] <- 0
+raw_metagenome_kaiju <- t(raw_metagenome_kaiju)
+
+# Perform Aldex search
+aldex_kaiju <- ALDEx2::aldex(raw_metagenome_kaiju, mixture_metadata$Group, mc.samples=128, test="t", effect=TRUE, include.sample.summary=FALSE, denom="iqlr", verbose=FALSE)
+aldex_kaiju <- aldex_kaiju[order(aldex_kaiju$wi.eBH),] 
+aldex_kaiju <- round(aldex_kaiju, digits = 2)
+
+head(aldex_kaiju, 10) %>%
+  kbl(caption = "Kaiju taxa which are the most different between the two groups") 
+
+# Load the taxa profiles determined with Metaphlan3 as a table with OTU in columns and samples as rows 
+raw_metagenome_Metaphlan3 <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S21.csv')
+raw_metagenome_Metaphlan3 <- data.frame(raw_metagenome_Metaphlan3[,-c(1,2)], row.names = raw_metagenome_Metaphlan3$X)
+raw_metagenome_Metaphlan3 <- as.data.frame(t(raw_metagenome_Metaphlan3))
+
+# Filter rare taxa
+raw_metagenome_Metaphlan3[raw_metagenome_Metaphlan3 == 0] <- NA
+raw_metagenome_Metaphlan3 <- raw_metagenome_Metaphlan3 %>% dplyr::select(which(colMeans(is.na(.)) < 0.2))
+raw_metagenome_Metaphlan3[is.na(raw_metagenome_Metaphlan3)] <- 0
+
+# Make Kruskall Wallis tests because the data is not provided as counts
+prov_metagenome <- cbind(metadata_group = mixture_metadata$Group, raw_metagenome_Metaphlan3)
+
+P_value_prov <- vector() ; outcome_list <- vector() ; P_value <- data.frame()
+for (i in c(2:ncol(prov_metagenome)))
+{
+  outcome <- colnames(prov_metagenome)[i]
+  P_value_prov <- kruskal.test(get(outcome) ~ prov_metagenome$metadata_group, data = prov_metagenome)$p.value
+  P_value <- rbind(P_value, P_value_prov)
+  outcome_list <- append(outcome_list, outcome)
+}
+results <- data.frame(outcome_list, P_value)
+
+colnames(results)[2] <- "P_value"
+library(qvalue)
+results$adjp_anova_r <- p.adjust(results$P_value, method = 'BH')
+
+head(results, 10) %>%
+  kbl(caption = "MetaPhlan3 taxa which are the most different between the two groups") 
+
+```
+
+```{r Analysis of metagenome function}
+# Using KO_level3
+raw_KO_level3 <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S23.csv')
+raw_KO_level3 <- data.frame(raw_KO_level3[,-1], row.names = raw_KO_level3$level3)
+raw_KO_level3 <- as.data.frame(t(raw_KO_level3))
+
+# Filter rare pathways
+raw_KO_level3[raw_KO_level3 == 0] <- NA
+raw_KO_level3 <- raw_KO_level3 %>% dplyr::select(which(colMeans(is.na(.)) < 0.2))
+raw_KO_level3[is.na(raw_KO_level3)] <- 0
+raw_KO_level3 <- t(raw_KO_level3)
+
+# Perform Aldex search
+aldex_KO_level3 <- aldex(raw_KO_level3, mixture_metadata$Group, mc.samples=128, test="t", effect=TRUE, include.sample.summary=FALSE, denom="iqlr", verbose=FALSE)
+aldex_KO_level3 <- aldex_KO_level3[order(aldex_KO_level3$wi.eBH),] 
+aldex_KO_level3 <- round(aldex_KO_level3, digits = 2)
+
+head(aldex_KO_level3, 10)  %>%
+  kbl(caption = "The 10 KO annotations which are the most different between the two groups") 
+
+# Using KO_function
+raw_KO_function <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S25.csv')
+raw_KO_function <- data.frame(raw_KO_function[,-1], row.names = raw_KO_function$ko_function)
+raw_KO_function <- as.data.frame(t(raw_KO_function))
+
+# Filter rare pathways
+raw_KO_function[raw_KO_function == 0] <- NA
+raw_KO_function <- raw_KO_function %>% dplyr::select(which(colMeans(is.na(.)) < 0.2))
+raw_KO_function[is.na(raw_KO_function)] <- 0
+raw_KO_function <- t(raw_KO_function)
+
+# Perform Aldex search
+aldex_KO_function <- aldex(raw_KO_function, mixture_metadata$Group, mc.samples=128, test="t", effect=TRUE, include.sample.summary=FALSE, denom="iqlr", verbose=FALSE)
+aldex_KO_function <- aldex_KO_function[order(aldex_KO_function$wi.eBH),] 
+aldex_KO_function <- round(aldex_KO_function, digits = 2)
+
+head(aldex_KO_function, 10)  %>%
+  kbl(caption = "The 10 pathways which are the most different between the two groups") 
+
+
+# Plot the pathways tryptophan and nicotinamide
+plotdata <- raw_KO_level3
+plotdata[is.na(plotdata)] <- 0
+plotdata <- t(plotdata)
+plotdata <- data.frame(condition = mixture_metadata$Group, plotdata)
+
+# Plot the pathway tryptophan 
+ggplot(plotdata, aes(x= condition, y=`X00380.Tryptophan.metabolism..PATH.ko00380.`, color= condition, fill=condition)) + ylab('Tryptophan.metabolism PATH.ko00380') +
+  geom_boxplot(outlier.shape = NA, alpha = 0.3)  + theme_bw() +  scale_fill_manual(values=c("grey", "firebrick")) + geom_jitter(size = 0.5, position=position_jitter(0.2)) +
+  theme(text = element_text(size=8), axis.title.x=element_blank(), axis.text.x = element_blank(), legend.position = "none") + 
+  scale_color_manual(values=c("black", "firebrick2"))
+
+# Plot the pathway nicotinamide
+ggplot(plotdata, aes(x= condition, y=`X00760.Nicotinate.and.nicotinamide.metabolism..PATH.ko00760.`, color= condition, fill=condition)) + ylab('Nicotinamide metabolism PATH.ko00760.') +
+  geom_boxplot(outlier.shape = NA, alpha = 0.3)  + theme_bw() +  scale_fill_manual(values=c("grey", "firebrick")) + geom_jitter(size = 0.5, position=position_jitter(0.2)) +
+  theme(text = element_text(size=8), axis.title.x=element_blank(), axis.text.x = element_blank(), legend.position = "none") + 
+  scale_color_manual(values=c("black", "firebrick2"))
+
+```
+
+# Liver transcriptomics
+
+RNA-seq data was analysed with Salmon. This tool was used to quantify transcript abundance by mapping the reads against a reference transcriptome (Ensembl Release Rattus Norvegicus 6.0 cDNA fasta). Mapping rate was 82.0 ± 4.4% on a rat transcriptome index containing 31,196 targets. The Salmon output was then imported in R as described in this Markdown using the Bioconductor package tximport. 
+
+We created a transcript database containing transcript counts, which was used to perform a differential gene expression analysis using DESeq2. We finally used goseq to perform a gene ontology analysis accounting for transcript length biases. 
+
+In this markdown, the files generated using Salmon, counting the number of reads mapping to each gene of the rat transcriptome, are downloaded from my github repository.
+
+The following markdown describes the different steps for this analysis. A Transcriptome file is created with all the raw and processed data. It is composed of:
+
+Transcriptome$abundance: Available as File S27
+Transcriptome$counts: Available as File S28
+Transcriptome$length: Available as File S29
+Transcriptome$gtf_file: Available as File S30
+Transcriptome$sampleinfo: Available as Excel S31
+Transcriptome$DESeq_normalized_counts : Available as File S32
+Transcriptome$res_mixtureOrdered: Available as File S33
+Transcriptome$KEGG: Available as File S34
+Transcriptome$GO.wall: Available as File S35
+
+The raw data from the transcriptomics analysis is available at GEO accession number GSE157426.
+
+```{r reads the output of Salmon and produce a table of TPM for mixture}
+# Create a directory to store the output of salmon
+dir.create("sf", showWarnings = TRUE, recursive = FALSE)
+
+# Download the Salmon quantification files for the control group
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/GC-RM-8672-BT5011-1_quant.sf', 'sf/GC-RM-8672-BT5011-1_quant.sf')
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/GC-RM-8672-BT5011-2_quant.sf', 'sf/GC-RM-8672-BT5011-2_quant.sf')
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/GC-RM-8672-BT5011-3_quant.sf', 'sf/GC-RM-8672-BT5011-3_quant.sf')
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/GC-RM-8672-BT5011-4_quant.sf', 'sf/GC-RM-8672-BT5011-4_quant.sf')
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/GC-RM-8672-BT5011-5_quant.sf', 'sf/GC-RM-8672-BT5011-5_quant.sf')
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/GC-RM-8672-BT5011-6_quant.sf', 'sf/GC-RM-8672-BT5011-6_quant.sf')
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/GC-RM-8672-BT5011-7_quant.sf', 'sf/GC-RM-8672-BT5011-7_quant.sf')
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/GC-RM-8672-BT5011-8_quant.sf', 'sf/GC-RM-8672-BT5011-8_quant.sf')
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/GC-RM-8672-BT5011-9_quant.sf', 'sf/GC-RM-8672-BT5011-9_quant.sf')
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/GC-RM-8672-BT5011-10_quant.sf', 'sf/GC-RM-8672-BT5011-10_quant.sf')
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/GC-RM-8672-BT5011-11_quant.sf', 'sf/GC-RM-8672-BT5011-11_quant.sf')
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/GC-RM-8672-BT5011-12_quant.sf', 'sf/GC-RM-8672-BT5011-12_quant.sf')
+
+# Download the Salmon quantification files for the mixture group
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/GC-RM-8672-BT5011-141_quant.sf', 'sf/GC-RM-8672-BT5011-141_quant.sf')
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/GC-RM-8672-BT5011-142_quant.sf', 'sf/GC-RM-8672-BT5011-142_quant.sf')
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/GC-RM-8672-BT5011-143_quant.sf', 'sf/GC-RM-8672-BT5011-143_quant.sf')
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/GC-RM-8672-BT5011-144_quant.sf', 'sf/GC-RM-8672-BT5011-144_quant.sf')
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/GC-RM-8672-BT5011-145_quant.sf', 'sf/GC-RM-8672-BT5011-145_quant.sf')
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/GC-RM-8672-BT5011-146_quant.sf', 'sf/GC-RM-8672-BT5011-146_quant.sf')
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/GC-RM-8672-BT5011-147_quant.sf', 'sf/GC-RM-8672-BT5011-147_quant.sf')
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/GC-RM-8672-BT5011-148_quant.sf', 'sf/GC-RM-8672-BT5011-148_quant.sf')
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/GC-RM-8672-BT5011-149_quant.sf', 'sf/GC-RM-8672-BT5011-149_quant.sf')
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/GC-RM-8672-BT5011-150_quant.sf', 'sf/GC-RM-8672-BT5011-150_quant.sf')
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/GC-RM-8672-BT5011-151_quant.sf', 'sf/GC-RM-8672-BT5011-151_quant.sf')
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/GC-RM-8672-BT5011-152_quant.sf', 'sf/GC-RM-8672-BT5011-152_quant.sf')
+
+dirs <- list.files("sf/")
+quant_files <- list.files("sf/",pattern="quant.sf",recursive = TRUE,full.names = TRUE)
+names(quant_files) <- dirs
+quant_files
+
+# Inspecting the salmon output
+quants <- read_tsv(quant_files[1])
+head(quants)
+
+# Download the sample information allocating the Salmon files a rat ID
+sampleinfo <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S31.csv')
+rownames(sampleinfo) <- sampleinfo$run
+
+# Download the GTF files
+download.file('ftp://ftp.ensembl.org/pub/release-99/gtf/rattus_norvegicus/Rattus_norvegicus.Rnor_6.0.99.gtf.gz', 'Rattus_norvegicus.Rnor_6.0.99.gtf.gz')
+R.utils::gunzip('Rattus_norvegicus.Rnor_6.0.99.gtf.gz')
+gtf_file <- "Rattus_norvegicus.Rnor_6.0.99.gtf"
+file.exists(gtf_file)
+
+# Create the Tx database
+txdb <- makeTxDbFromGFF(gtf_file)
+k <- keys(txdb, keytype="TXNAME")
+tx_map <- AnnotationDbi::select(txdb, keys = k, columns="GENEID", keytype = "TXNAME")
+head(tx_map)
+
+# Fixing the problem with transcript names - the hard way as recommended from TX tutorial
+quants <- separate(quants, Name, c("TXNAME","Number"),remove = FALSE)
+head(quants)
+quants <- dplyr:::left_join(quants, tx_map, by="TXNAME")
+head(quants)
+tx2gene <- dplyr:::select(quants, Name, GENEID)
+head(tx2gene)
+any(is.na(tx2gene$GENEID))
+tx2gene <- dplyr:::filter(tx2gene, !is.na(GENEID))
+transcriptome <- tximport(quant_files,type="salmon",tx2gene = tx2gene)
+
+# Double check that the samples are actually what we call them
+all(rownames(sampleinfo) == colnames(transcriptome$counts))
+
+# Create the DESeq object
+dds_mixture <- DESeqDataSetFromTximport(transcriptome, 
+                                        colData = sampleinfo,
+                                        design <- ~group)
+
+# Filter genes with less than 5 counts in 5 samples
+keep <- rowSums(assay(dds_mixture) >= 5) >= 5
+dds_mixture <- dds_mixture[keep,]
+
+# DESeq
+dds_mixture <- DESeq(dds_mixture)
+DESeq_normalized_counts <- counts(dds_mixture, normalized=TRUE)
+resultsNames(dds_mixture)
+
+# Extract the DESeq results
+res_mixture <- results(dds_mixture)
+res_mixtureOrdered <- res_mixture[order(res_mixture$pvalue),]
+res_mixtureOrdered <- as.data.frame(res_mixtureOrdered)
+res_mixtureOrdered <- res_mixtureOrdered[!is.na(res_mixtureOrdered$padj),]
+res_mixtureOrdered$gene_id <- row.names(res_mixtureOrdered)
+
+# Use a parsed GTF file to found the correspondance between gene ID and their annotations
+gtf_file <- read.table('https://raw.githubusercontent.com/mesnage/MixtureTox/main/transcriptome/Rattus_norvegicus.Rnor_6.0.99_parsed.txt', header = TRUE, sep = '\t')
+res_mixtureOrdered <- dplyr:::right_join(gtf_file, res_mixtureOrdered, by = 'gene_id')
+
+# Calculate the fold change
+res_mixtureOrdered$FC <- ifelse(res_mixtureOrdered$log2FoldChange > 0, 2 ^ res_mixtureOrdered$log2FoldChange, -1 / (2 ^ res_mixtureOrdered$log2FoldChange)) 
+
+# Create the transcriptome object storing the results
+transcriptome[["gtf_file"]] <- gtf_file
+transcriptome[["sampleinfo"]] <- sampleinfo
+transcriptome[["dds_mixture"]] <- dds_mixture
+transcriptome[["DESeq_normalized_counts"]] <- DESeq_normalized_counts
+transcriptome[["res_mixtureOrdered"]] <- res_mixtureOrdered
+
+head(transcriptome$res_mixtureOrdered, 10)  %>%
+  kbl(caption = "Liver transcriptome of Sprague-Dawley rats exposed for 90 days to the mixture of 6 pesticides. Genes were considered as differentially expressed if their count were found to be statistically significant after an analysis with DESeq2")
+
+```
+
+```{r volcano plot and GoSeq mixture}
+# Classify the genes as statistially significant or not
+res_mixtureOrdered <- transcriptome$res_mixtureOrdered
+res_mixtureOrdered$Significant <- ifelse(res_mixtureOrdered$FC > 1.5 & res_mixtureOrdered$padj < 0.05 | res_mixtureOrdered$FC < -1.5 & res_mixtureOrdered$padj < 0.05, "FDR < 0.05", "Not Sig")
+res_mixtureOrdered$Very_Significant <- ifelse(res_mixtureOrdered$FC > 1.5 & res_mixtureOrdered$padj < 0.01 | res_mixtureOrdered$FC < -1.5 & res_mixtureOrdered$padj < 0.01, "FDR < 0.01", "Not Sig")
+
+# Create a volcano plot using the DESeq results
+ggplot(res_mixtureOrdered, aes(x = log2FoldChange, y = -log10(pvalue))) +
+  geom_point(aes(color = Significant)) +
+  labs(xlab("Log2 fold change"), ylab("-log10 p-value"))  + 
+  scale_color_manual(values = c("red", "grey")) + 
+  theme_bw(base_size = 12) + theme(legend.position = "bottom") +
+  ggrepel::geom_text_repel(
+    data = subset(res_mixtureOrdered, Very_Significant == "FDR < 0.01"),
+    aes(label = gene_name),
+    size = 3,
+    box.padding = unit(0.35, "lines"),
+    point.padding = unit(0.3, "lines"))
+
+
+res_mixtureOrdered$Significant <- ifelse(res_mixtureOrdered$FC > 1.5 & res_mixtureOrdered$padj < 0.05 | res_mixtureOrdered$FC < -1.5 & res_mixtureOrdered$padj < 0.05, "FDR < 0.05", "Not Sig")
+
+# Goseq enrichment
+library(Biobase) ; library(goseq) ; library("org.Hs.eg.db")
+
+# Remove duplicates
+res_mixtureOrdered <- res_mixtureOrdered[!duplicated(res_mixtureOrdered$gene_name), ]
+
+# Classify the genes as statistially significant or not
+genes = as.integer(ifelse(res_mixtureOrdered$FC > 1.5 & res_mixtureOrdered$padj < 0.05 | res_mixtureOrdered$FC < -1.5 & res_mixtureOrdered$padj < 0.05, 1, 0))
+
+# GO BP analysis
+names(genes)= res_mixtureOrdered$gene_name
+pwf=nullp(genes,"rn4","geneSymbol")
+
+GO.wall=goseq(pwf,"rn4","geneSymbol", test.cats=c("GO:BP"), use_genes_without_cat=TRUE)
+GO.wall$padjust = p.adjust(GO.wall$over_represented_pvalue,method="BH")
+
+head(GO.wall, 10)  %>%
+  kbl(caption = "Gene Ontology (GO) terms enriched among the differentially expressed genes") 
+
+# KEGG pathway analysis
+KEGG=goseq(pwf,'rn4','geneSymbol',test.cats="KEGG", use_genes_without_cat=TRUE)
+head(KEGG)
+KEGG$padjust = p.adjust(KEGG$over_represented_pvalue,method="BH")
+
+head(KEGG, 10)  %>%
+  kbl(caption = "KEGG terms enriched among the differentially expressed genes")
+
+```
+
+We also used orthogonal partial least squares discriminant analysis (OPLS-DA) to evaluate the predictive ability of each omics approach. The R package ropls version 1.20.0 was used. This algorithm uses the nonlinear iterative partial least squares algorithm (NIPALS). Since PLS-DA methods are prone to overfitting, we assessed the significance of our classification using permutation tests (permuted 1,000 times).
+
+```{r OPLSDA for transcriptome}
+# Make the OPLS-DA for the liver transcriptome profiles
+transcriptome_counts <- t(transcriptome$abundance)
+labellm <- transcriptome$sampleinfo$group
+transcriptome_counts <- data.frame(labellm, transcriptome_counts)
+labellm <- transcriptome_counts$labellm
+labellm <- factor(labellm)
+transcriptome_counts <- transcriptome_counts[,-1]
+transcriptome.oplsda <- opls(transcriptome_counts, labellm, orthoI = NA, predI = 1, permI = 1000)
+
+```
+
+# Liver methylation
+
+DNA methylation calls from RRBS data were extracted with Bismark. The output from Bismark was then imported in R and analysed with Methylkit. DNA methylation calls were annotated using RefSeq gene predictions for rats (rn6 release) with the package genomation. Other annotations were retrieved using the genome wide annotation for rat tool org.Rn.eg.dbR package version 3.8.2. Statistical analysis was performed with logistic regression models fitted per CpG using Methylkit functions. P-values were adjusted to Q-values using SLIM method.
+
+The raw data from the RRBS analysis is available at GEO accession number GSE157551.
+
+The output from Bismark is downloaded from GitHUb. Note that 5 files were over the 25Mb size limit for GitHub. In order to allow their use, they have been broken down for their storage on GitHub. A bashscript is included in this Markdown to concatenate back the outputs of the 5 files.
+
+```{r download the Bismark output}
+
+# Download the files fron GitHub, and unzip them
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-1-F-215254.bismark.cov.gz', 'CON_01.cov.gz')
+R.utils::gunzip('CON_01.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-2-F-215271.bismark.cov.gz', 'CON_02.cov.gz')
+R.utils::gunzip('CON_02.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-3-F-215286.bismark.cov.gz', 'CON_03.cov.gz')
+R.utils::gunzip('CON_03.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-4-F-215301.bismark.cov.gz', 'CON_04.cov.gz')
+R.utils::gunzip('CON_04.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-5-F-215328.bismark.cov.gz', 'CON_05.cov.gz')
+R.utils::gunzip('CON_05.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-6-F-215347.bismark.cov.gz', 'CON_06.cov.gz')
+R.utils::gunzip('CON_06.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-7-F-215373.bismark.cov.gz', 'CON_07.cov.gz')
+R.utils::gunzip('CON_07.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-8-F-215392.bismark.cov.gz', 'CON_08.cov.gz')
+R.utils::gunzip('CON_08.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-9-F-215417.bismark.cov.gz', 'CON_09.cov.gz')
+R.utils::gunzip('CON_09.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-10-F-215434_head.bismark.cov.gz', 'CON_10_head.cov.gz')
+R.utils::gunzip('CON_10_head.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-10-F-215434_tail.bismark.cov.gz', 'CON_10_tail.cov.gz')
+R.utils::gunzip('CON_10_tail.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-11-F-215459_head.bismark.cov.gz', 'CON_11_head.cov.gz')
+R.utils::gunzip('CON_11_head.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-11-F-215459_tail.bismark.cov.gz', 'CON_11_tail.cov.gz')
+R.utils::gunzip('CON_11_tail.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-12F-215474.bismark.cov.gz', 'CON_12.cov.gz')
+R.utils::gunzip('CON_12.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-141-F-215261_head.bismark.cov.gz', 'MIX_01_head.cov.gz')
+R.utils::gunzip('MIX_01_head.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-141-F-215261_tail.bismark.cov.gz', 'MIX_01_tail.cov.gz')
+R.utils::gunzip('MIX_01_tail.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-142-F-215278.bismark.cov.gz', 'MIX_02.cov.gz')
+R.utils::gunzip('MIX_02.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-143-F-215300.bismark.cov.gz', 'MIX_03.cov.gz')
+R.utils::gunzip('MIX_03.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-144-F-215327.bismark.cov.gz', 'MIX_04.cov.gz')
+R.utils::gunzip('MIX_04.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-145-F-215346_head.bismark.cov.gz', 'MIX_05_head.cov.gz')
+R.utils::gunzip('MIX_05_head.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-145-F-215346_tail.bismark.cov.gz', 'MIX_05_tail.cov.gz')
+R.utils::gunzip('MIX_05_tail.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-146-F-215366.bismark.cov.gz', 'MIX_06.cov.gz')
+R.utils::gunzip('MIX_06.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-147-F-215391.bismark.cov.gz', 'MIX_07.cov.gz')
+R.utils::gunzip('MIX_07.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-148-F-215416.bismark.cov.gz', 'MIX_08.cov.gz')
+R.utils::gunzip('MIX_08.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-149-F-215433_tail.bismark.cov.gz', 'MIX_09_tail.cov.gz')
+R.utils::gunzip('MIX_09_tail.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-149-F-215433_head.bismark.cov.gz', 'MIX_09_head.cov.gz')
+R.utils::gunzip('MIX_09_head.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-150-F-215458.bismark.cov.gz', 'MIX_10.cov.gz')
+R.utils::gunzip('MIX_10.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-151-F-215473.bismark.cov.gz', 'MIX_11.cov.gz')
+R.utils::gunzip('MIX_11.cov.gz')
+
+download.file('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/GC-RM-8674-BT5011-152-F-215498.bismark.cov.gz', 'MIX_12.cov.gz')
+R.utils::gunzip('MIX_12.cov.gz')
+```
+
+```{bash,  engine.opts='-l'}
+
+cat CON_11_head.cov CON_11_tail.cov > CON_11.cov
+cat CON_10_head.cov CON_10_tail.cov > CON_10.cov
+cat MIX_01_head.cov MIX_01_tail.cov > MIX_01.cov
+cat MIX_05_head.cov MIX_05_tail.cov > MIX_05.cov
+cat MIX_09_head.cov MIX_09_tail.cov > MIX_09.cov
+
+```
+
+```{r methylkit to get significant loci}
+# Load the methylkit dataset
+metadata <- read.csv('https://raw.githubusercontent.com/mesnage/MixtureTox/main/mixture_S01.csv')
+
+gene.obj=readTranscriptFeatures('https://raw.githubusercontent.com/mesnage/MixtureTox/main/methylation/rn6.ncbiRefSeq.bed')
+
+Sample <- metadata$Methylation
+files <- paste0(Sample,".cov")
+
+
+metadata$Group[metadata$Group == 'CON'] <- 0
+metadata$Group[metadata$Group == 'MIX'] <- 1
+
+# Create the methylkit object
+myobj=methRead(as.list(files),
+               as.list(metadata$Methylation),
+               assembly="rn6",
+               treatment=as.integer(metadata$Group),
+               context="CpG",
+               mincov = 10, pipeline = "bismarkCoverage")
+
+# Plot the histogram for percent methylation distribution. Typically, percent methylation histogram should have two peaks on both ends
+getMethylationStats(myobj[[1]],plot=TRUE,both.strands=FALSE)
+
+# Plot read coverage per base information
+getCoverageStats(myobj[[1]],plot=TRUE,both.strands=FALSE)
+
+# Filtering samples based on read coverage
+myobj=filterByCoverage(myobj,lo.count=15,lo.perc=NULL, hi.count=NULL,hi.perc=99.9)
+
+# Merging samples
+meth=unite(myobj, destrand=FALSE)
+
+#Finding differentially methylated bases or regions
+myDiff=calculateDiffMeth(meth)
+```
+
+```{r circos plot of the location of significant loci}
+myDiffp.hyper=getMethylDiff(myDiff,difference=10,qvalue=0.05,type="hyper")
+myDiffp.hypo=getMethylDiff(myDiff,difference=10,qvalue=0.05,type="hypo")
+myDiffp =getMethylDiff(myDiff,difference=10,qvalue=0.05)
+
+circos.initializeWithIdeogram(species = "rn6")
+bed_list = list(data.frame(myDiffp.hyper)[,c(1:3)], data.frame(myDiffp.hypo)[,c(1:3)])
+circos.genomicRainfall(bed_list[1], pch = 16, cex = 0.6, track.height = 0.1, col = c("#FF000080"))
+circos.genomicRainfall(bed_list[2], pch = 16, cex = 0.6, track.height = 0.1, col = c("#0000FF80"))
+
+# Summary of target set annotation with genic parts
+annotateWithGeneParts(as(myDiffp,"GRanges"),gene.obj)
+diffpAnn=annotateWithGeneParts(as(myDiffp,"GRanges"),gene.obj)
+diffpAnn_table <- getAssociationWithTSS(diffpAnn)
+```
+
+```{r percentage methylation per base}
+# Percentage DNA methylation profile shows a bimodal distribution of methylation calls for each sample
+perc.meth <- data.frame(percMethylation(meth))
+perc.meth <- reshape2::melt(perc.meth)
+met_per_base <- ggplot(perc.meth, aes(x = value, y = variable, fill = variable)) + 
+  geom_density_ridges(scale = 4, alpha = .3) + xlab("% methylation per base") + ylab("sample") +
+  scale_fill_cyclical(values = c("black", "black", "black", "black", "black", "black",
+                                 "black", "black","black", "black","black", "black", 
+                                 "firebrick","firebrick","firebrick","firebrick","firebrick","firebrick",
+                                 "firebrick","firebrick","firebrick","firebrick","firebrick","firebrick")) +
+  theme(legend.position = NULL) + theme_bw()
+
+met_per_base
+
+```
+
+```{r Methylation level by distance to the nearest gene TSS}
+# Does CpG methylation decreases around transcription start sites?
+annotateWithGeneParts(as(myDiff,"GRanges"),gene.obj)
+diffAnn=annotateWithGeneParts(as(myDiff,"GRanges"),gene.obj)
+diffAnn_table <- getAssociationWithTSS(diffAnn)
+
+perc.meth <- data.frame(getAssociationWithTSS(diffAnn), percMethylation(meth))
+perc.meth <- perc.meth %>% group_by(dist.to.feature) %>% summarise_at(vars(CON_01:MIX_12), mean, na.rm = TRUE)
+
+i <- abs(perc.meth$dist.to.feature) < 10000
+cpg_tss <- perc.meth[i,]
+cpg_tss <- reshape2::melt(cpg_tss, id.vars = c("dist.to.feature"))
+cpg_tss_plot <- ggplot(data = cpg_tss, aes(dist.to.feature, value, group = variable, colour = variable)) + geom_smooth(se = FALSE, size = 0.3) + 
+  theme_bw() + ylab("Percentage CpG methylation") + xlab("distance to TSS") + 
+  scale_color_manual(values=c("black", "black", "black", "black", "black", "black",
+                                 "black", "black","black", "black","black", "black", 
+                                 "firebrick","firebrick","firebrick","firebrick","firebrick","firebrick",
+                                 "firebrick","firebrick","firebrick","firebrick","firebrick","firebrick")) +
+  theme(legend.position = "none")
+
+cpg_tss_plot
+
+```
+
+```{r clustering}
+# CpG methylation sample clustering 
+clusterSamples(meth, dist="correlation", method="ward", plot=TRUE)
+```
+
+```{r Volcano plot}
+# Volcano plots of differentially methylated CpG sites 
+annotateWithGeneParts(as(myDiff,"GRanges"),gene.obj)
+diffAnn=annotateWithGeneParts(as(myDiff,"GRanges"),gene.obj)
+diffAnn_table <- getAssociationWithTSS(diffAnn)
+
+# Match annotations
+result_methylation_table <- data.frame(myDiff, diffAnn_table)
+result_methylation_table$feature.name<- sub("\\..*","\\",result_methylation_table$feature.name)
+result_methylation_table$gene.name <- mapIds(org.Rn.eg.db, result_methylation_table$feature.name, keytype="REFSEQ", column="GENENAME")
+result_methylation_table$go.name <- mapIds(org.Rn.eg.db, result_methylation_table$feature.name, keytype="REFSEQ", column="GO")
+
+result_methylation_table$Significant <- ifelse(abs(result_methylation_table$meth.diff) > 10 & result_methylation_table$qvalue < 0.05, "FDR < 0.05", "Not Sig")
+
+Volcano_plot <- ggplot(result_methylation_table, aes(x = meth.diff, y = -log10(pvalue))) +
+  geom_point(aes(color = Significant)) +
+  xlab("Percentage methylation change") + ylab("-log10 p-value") + 
+  scale_color_manual(values = c("red", "grey")) + 
+  theme_bw(base_size = 12) + theme(legend.position = "bottom") + theme_bw()
+
+Volcano_plot
+
+```
+
+```{r in promoters}
+# Promoter specific analysis
+promoters=regionCounts(myobj,gene.obj$promoters)
+meth_promoters=unite(promoters, destrand=FALSE)
+
+# Finding differentially methylated bases or regions
+myDiff_meth_promoters=calculateDiffMeth(meth_promoters)
+
+# Summary of target set annotation with genic parts
+annotateWithGeneParts(as(myDiff_meth_promoters,"GRanges"),gene.obj)
+diffAnn_promoters=annotateWithGeneParts(as(myDiff_meth_promoters,"GRanges"),gene.obj)
+diffAnn_table_promoters <- getAssociationWithTSS(diffAnn_promoters)
+
+# Match annotations
+result_methylation_table_promoters <- data.frame(myDiff_meth_promoters, diffAnn_table_promoters)
+result_methylation_table_promoters$feature.name<- sub("\\..*","\\",result_methylation_table_promoters$feature.name)
+result_methylation_table_promoters$gene.name <- mapIds(org.Rn.eg.db, result_methylation_table_promoters$feature.name, keytype="REFSEQ", column="GENENAME")
+result_methylation_table_promoters$go.name <- mapIds(org.Rn.eg.db, result_methylation_table_promoters$feature.name, keytype="REFSEQ", column="GO")
+
+result_methylation_table_promoters <- result_methylation_table_promoters %>% distinct(feature.name, meth.diff, .keep_all = TRUE)
+
+i <- abs(result_methylation_table_promoters$meth.diff) > 10
+result_methylation_table_promoters <- result_methylation_table_promoters[i,]
+i <- result_methylation_table_promoters$qvalue < 0.05
+result_methylation_table_promoters <- result_methylation_table_promoters[i,]
+
+
+```
+
+```{r Scatter plot of the log-fold-changes of methylation levels in gene promoters vs the log fold-changes of gene expression}
+# Match annotations
+result_methylation_table_promoters <- data.frame(myDiff_meth_promoters, diffAnn_table_promoters)
+result_methylation_table_promoters$feature.name<- sub("\\..*","\\",result_methylation_table_promoters$feature.name)
+result_methylation_table_promoters$gene.name <- mapIds(org.Rn.eg.db, result_methylation_table_promoters$feature.name, keytype="REFSEQ", column="GENENAME")
+result_methylation_table_promoters$go.name <- mapIds(org.Rn.eg.db, result_methylation_table_promoters$feature.name, keytype="REFSEQ", column="GO")
+
+# Fetch transcriptome results
+rna_table <-data.frame(transcriptome$res_mixtureOrdered)
+rna_table$feature.name <- mapIds(org.Rn.eg.db, rna_table$gene_id, keytype="ENSEMBL", column="REFSEQ")
+
+# Make correlation tables with gene methylation and gene expression
+correlation_table <- left_join(result_methylation_table_promoters, rna_table, by = 'feature.name')
+correlation_table <- correlation_table[!is.na(correlation_table$gene_id),]
+correlation_table <- correlation_table[correlation_table$padj < 0.05,]
+correlation_table$log10p_met <- -log10(correlation_table$pvalue.x)
+
+# Plot the correlation between gene expression and their methylation
+ggplot(correlation_table, aes(log2FoldChange, meth.diff)) + geom_point(aes(colour = log10p_met)) + 
+  xlab("fold change in gene expression") + ylab("percentage change in methylation") +
+  geom_hline(yintercept=0, linetype="dashed") + geom_vline(xintercept=0, linetype="dashed") + theme_bw() +
+  scale_colour_gradient(low = "grey", high = "red", na.value = NA)
+
+# Calculate and test the correlation
+cor.test(correlation_table$meth.diff, correlation_table$FC)
+```
+
+
+
+
