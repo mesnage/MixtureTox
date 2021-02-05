@@ -31,10 +31,10 @@ Raw data for food consumption is available as File S5
 
 Serum Metabolomics analysis was conducted under contract with Metabolon Inc. (Durham, NC, USA) on four independent instrument platforms as previously described: two different separate reverse phase ultrahigh performance liquid chromatography-tandem mass spectroscopy analysis (RP/UPLC-MS/MS) with positive ion mode electrospray ionization (ESI), a RP/UPLC-MS/MS with negative ion mode ESI, as well as by hydrophilic-interaction chromatography (HILIC)/UPLC-MS/MS with negative ion mode ESI.
 
-The raw data for the peak intensity is available as File S10. 
-The metadata describing annotation, mass and RI is available as File S9.
-The scaled and imputed data is available as File S11.
-The results are available as File S12
+- The raw data for the peak intensity is available as File S10. 
+- The metadata describing annotation, mass and RI is available as File S9.
+- The scaled and imputed data is available as File S11.
+- The results are available as File S12
 
 Scaled and imputed peak area values were log transformed, and statistical significance determined using a Welch’s two-sample t-test adjusted for multiple comparisons with FDR methods using the R package ‘qvalue’. The hypergeometric P-values were computed using the R package Hypergeo. We also used orthogonal partial least squares discriminant analysis (OPLS-DA) to evaluate the predictive ability of each omics approach. The R package ropls version 1.20.0 was used. This algorithm uses the nonlinear iterative partial least squares algorithm (NIPALS). Since PLS-DA methods are prone to overfitting, we assessed the significance of our classification using permutation tests (permuted 1,000 times).
 
