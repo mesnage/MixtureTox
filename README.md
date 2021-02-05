@@ -12,7 +12,7 @@ A R Markdown document has been made available to ensure the full reproducibility
 
 The daily water consumption per cage was measured before the start of the experiment, and weekly for all the duration of the treatment (13 weeks). Before the final sacrifice and after about 16 hours in metabolic cage, water consumption, was registered for each animal. The means of individual consumptions and related standard deviation were calculated for every group and for sex.
 
-- Raw data for water consumption is available as File S2
+- Raw data for water consumption is available as [File S2](https://github.com/mesnage/MixtureTox/blob/main/mixture_S02.csv) 
 
 #### Food consumption
 
