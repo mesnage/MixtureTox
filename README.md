@@ -8,24 +8,24 @@ The study metadata is a table containing all the study identifiers as File S1.
 
 The daily water consumption per cage was measured before the start of the experiment, and weekly for all the duration of the treatment (13 weeks). Before the final sacrifice and after about 16 hours in metabolic cage, water consumption, was registered for each animal. The means of individual consumptions and related standard deviation were calculated for every group and for sex.
 
-Raw data for water consumption is available as File S2
+- Raw data for water consumption is available as File S2
 
 #### Food consumption
 
 The daily food consumption per cage was measured before the start of the experiment, and weekly for all the duration of the treatment (13 weeks). Before the final sacrifice and after about 16 hours in metabolic cage, water consumption, was registered for each animal. The means of individual consumptions and related standard deviation were calculated for every group and for sex.
 
-Raw data for food consumption is available as File S3.
+- Raw data for food consumption is available as File S3.
 
 #### Body weights
 
 Body weight of experimental animals was measured before the start of the treatment, and then weekly for 13 weeks. All the experimental animals were weighted just before the sacrifice. Average body weights and related standard deviations were calculated for each experimental group.
 
-Raw data for food consumption is available as File S4
+- Raw data for food consumption is available as File S4
 
 #### Serum biochemistry
 Serum biochemistry was performed under contract by IDEXX BioAnalytics (Stuttgart, Germany), an ISO 17025 accredited laboratory. Briefly, sodium and potassium levels were measured by indirect potentiometry. Albumin was measured by a photometric bromocresol green test. ALP was measured by IFCC with AMP-buffer method, glucose by Enzymatic UV-Test (hexokinase method), cholesterol by Enzymatic color test (CHOD-PAP), blood urea nitrogen by enzymatic UV-Test, gamma-glutamyl-transferase by Kinetic color test International Federation of Clinical Chemistry (IFCC), aspartate and alanine aminotransferase by kinetic UV-test (IFCC+ pyridoxal-5-phosphate), creatinine by kinetic color test (Jaffe’s method), lactate dehydrogenase by IFCC method, and triglycerides using an enzymatic color test (GPO-PAP) on a Beckman Coulter AU 480.
 
-Raw data for food consumption is available as File S5
+- Raw data for food consumption is available as File S5
 
 #### Serum metabolomics
 
@@ -36,20 +36,16 @@ Serum Metabolomics analysis was conducted under contract with Metabolon Inc. (Du
 - The scaled and imputed data is available as File S11.
 - The results are available as File S12
 
-Scaled and imputed peak area values were log transformed, and statistical significance determined using a Welch’s two-sample t-test adjusted for multiple comparisons with FDR methods using the R package ‘qvalue’. The hypergeometric P-values were computed using the R package Hypergeo. We also used orthogonal partial least squares discriminant analysis (OPLS-DA) to evaluate the predictive ability of each omics approach. The R package ropls version 1.20.0 was used. This algorithm uses the nonlinear iterative partial least squares algorithm (NIPALS). Since PLS-DA methods are prone to overfitting, we assessed the significance of our classification using permutation tests (permuted 1,000 times).
-
 The raw data is available in Metabolights, with the accession number MTBLS138 (https://www.ebi.ac.uk/metabolights/MTBLS138).
 
 #### Caecum metabolomics
 
 Caecum Metabolomics analysis was conducted under contract with Metabolon Inc. (Durham, NC, USA) on four independent instrument platforms as previously described: two different separate reverse phase ultrahigh performance liquid chromatography-tandem mass spectroscopy analysis (RP/UPLC-MS/MS) with positive ion mode electrospray ionization (ESI), a RP/UPLC-MS/MS with negative ion mode ESI, as well as by hydrophilic-interaction chromatography (HILIC)/UPLC-MS/MS with negative ion mode ESI.
 
-The raw data for the peak intensity is available as File S7.
-The metadata describing annotation, mass and RI is available as File S6.
-The scaled and imputed data is available as File S8.
-Results are available as file S13
-
-Scaled and imputed peak area values were log transformed, and statistical significance determined using a Welch’s two-sample t-test adjusted for multiple comparisons with FDR methods using the R package ‘qvalue’. The hypergeometric P-values were computed using the R package Hypergeo. We also used orthogonal partial least squares discriminant analysis (OPLS-DA) to evaluate the predictive ability of each omics approach. The R package ropls version 1.20.0 was used. This algorithm uses the nonlinear iterative partial least squares algorithm (NIPALS). Since PLS-DA methods are prone to overfitting, we assessed the significance of our classification using permutation tests (permuted 1,000 times).
+- The raw data for the peak intensity is available as File S7.
+- The metadata describing annotation, mass and RI is available as File S6.
+- The scaled and imputed data is available as File S8.
+- Results are available as file S13
 
 The raw data is available in Metabolights, with the accession number MTBLS138 (https://www.ebi.ac.uk/metabolights/MTBLS138).
 
@@ -60,43 +56,43 @@ The raw data are available from the National Center for Biotechnology Informatio
 
 Cleaned shotgun metagenomics reads were then processed for taxonomic and pathway profiling. Since there is no gold standard for computational analyses of shotgun metagenomics, we used a combination of approaches. We inferred the taxonomy with the RefSeq database on the metagenomics RAST server, IGGsearch (iggdb_v1.0.0_gut database), MetaPhlAn version 3.0 and Kaiju 1.0.1.
 
-IGG species count data table: File S14
-Phylum RefSeq: File S16
-Species RefSeq: File S17 
-Kaiju species table: File S19 
-Metaphlan3 species table: File S21 
-KO level 3 function table: File S23 
-KO pathway table: File S25
+Metagenome data.
+- IGG species count data table: File S14
+- Phylum RefSeq: File S16
+- Species RefSeq: File S17 
+- Kaiju species table: File S19 
+- Metaphlan3 species table: File S21 
+- KO level 3 function table: File S23 
+- KO pathway table: File S25
 
-We used ALDEx version 2 (ALDEx2) for differential (relative) abundance analysis of proportional data 56. Statistical analysis for taxa abundance was performed on a dataset corrected for asymmetry (uneven sequencing depths) using the inter-quartile log-ratio method, which identifies features with reproducible variance.
+Results.
+- IGG statistical analysis with Adlex2: File S15 
+- Species RefSeq statistical analysis with Adlex2: File S18 
+- Kaiju statistical analysis with Adlex2: File S20 
+- KO level 3 statistical analysis with Adlex2: File S24 
+- KO pathway statistical analysis with Adlex2: File S22
 
-IGG statistical analysis with Adlex2: File S15 
-Species RefSeq statistical analysis with Adlex2: File S18 
-Kaiju statistical analysis with Adlex2: File S20 
-KO level 3 statistical analysis with Adlex2: File S24 
-KO pathway statistical analysis with Adlex2: File S22
 
-Metaphlan3 statistical analysis was done using a kruskall-wallis test because the data was not counts but relative abundances values.
+#### Liver transcriptomics
+RNA-seq data was analysed with Salmon. This tool was used to quantify transcript abundance by mapping the reads against a reference transcriptome (Ensembl Release Rattus Norvegicus 6.0 cDNA fasta). Mapping rate was 82.0 ± 4.4% on a rat transcriptome index containing 31,196 targets. The Salmon output was then imported in R as described in this Markdown using the Bioconductor package tximport.
 
-A multivariate analysis consisting in a non-metric multidimensional scaling (NMDS) plot of Bray-Curtis distances between samples. Statistical significance of the sample clustering was evaluated with a permutational ANOVA (PERMANOVA) analysis on the Bray-Curtis distances with adonis() from vegan v2.4-2.
+The files generated using Salmon are available.
 
-#### S9	Metadata metabolomics serum
-#### S10 Serum metabolomics raw data
-#### S11 Serum metabolomics scaledinputdata
-#### S12 Serum metabolomics results
-#### S13 Caecum metabolomics results
-#### S14 IGG species count data table
-#### S15 IGG statistical analysis with Adlex2
-#### S16 Phylum RefSeq
-#### S17 Species RefSeq
-#### S18 Species RefSeq statistical analysis with Adlex2
-#### S19 Kaiju species table
-#### S20 Kaiju statistical analysis with Adlex2
-#### S21 Metaphlan3 species table
-#### S22 Metaphlan3 statistical analysis with Adlex2
-#### 23	KO level 3 function table
-#### S24 KO level 3 statistical analysis with Adlex2
-#### S25 KO pathway table
-#### S26 KO pathway statistical analysis with Adlex2
+- Transcriptome abundance: File S27
+- Transcriptome counts: File S28
+- Transcriptome length: File S29 
+- Transcriptome gtf_file: File S30 
+- Transcriptome sampleinfo: File S31
+- DESeq_normalized_counts: File S32 
+- Transcriptome statistical analysis: FileS33
+- Transcriptome pathway enrichment KEGG: File S34 
+- Transcriptome GO enrichment: File S35
+
+#### Liver methylation
+DNA methylation calls from RRBS data were extracted with Bismark. The output from Bismark was then imported in R and analysed with Methylkit. DNA methylation calls were annotated using RefSeq gene predictions for rats (rn6 release) with the package genomation. Other annotations were retrieved using the genome wide annotation for rat tool org.Rn.eg.dbR package version 3.8.2. Statistical analysis was performed with logistic regression models fitted per CpG using Methylkit functions. P-values were adjusted to Q-values using SLIM method.
+
+The raw data from the RRBS analysis is available at GEO accession number GSE157551.
+
+The output from Bismark is downloaded from GitHUb. Note that 5 files were over the 25Mb size limit for GitHub. In order to allow their use, they have been broken down for their storage on GitHub. A bashscript is included in this Markdown to concatenate back the outputs of the 5 files.
 
 
