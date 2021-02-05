@@ -6,7 +6,7 @@ Health effects of pesticides are not always accurately detected using the curren
 ### Publication
 Mesnage R, Teixeira M, Mandrioli D, Falcioni L, Ducarmon QR, Zwittink RD, Amiel C, Panoff J, Bourne B, Savage E, Mein CA, Belpoggi F, Antoniou MN (2020). Multi-omics phenotyping of the gut-liver axis allows health risk predictability from in vivo subchronic toxicity test of a low-dose pesticide mixture. BioRxiv. doi: https://doi.org/10.1101/2020.08.25.266528
 
-A R Markdown document has been made available to ensure the full reproducibility of these results: https://mesnage.github.io/mixtox.html 
+A R Markdown document has been made available to ensure the full reproducibility of these results: https://mesnage.github.io/mixtoxstudy.html 
 
 #### Water consumption	
 
