@@ -66,7 +66,7 @@ The raw data is available in Metabolights, with the accession number [MTBLS138](
 
 The code and results for the caecum metabolomics analysis are [available](https://mesnage.github.io/mixtoxstudy.html#serum-metabolomics) 
 
-#### S8	Caecum shotgun metagenomics
+#### Caecum shotgun metagenomics
 Shotgun metagenomics was performed by GenomeScan (Leiden, The Netherlands). The NEBNext® Ultra II FS DNA module (cat# NEB #E7810S/L) and the NEBNext® Ultra II Ligation module (cat# NEB #E7595S/L) were used to process the samples. The shotgun metagenomics data was pre-processed using the [pre-processing package v0.2.2](https://anaconda.org/fasnicar/preprocessing). In brief, this package concatenates reads, to remove Illumina adapters, discard low-quality (quality <20 or >2 Ns) or too short reads (< 75bp), remove phiX and rat genome sequences, and finally sorts and splits the reads into R1, R2, and UN sets of reads.
 
 The raw data are available from the National Center for Biotechnology Information (NCBI), with BioProject accession no.[PRJNA609596](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA609596). 
