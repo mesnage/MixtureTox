@@ -1,8 +1,12 @@
-# MixtureTox
+## Code and data for the multi-omics phenotyping of the gut-liver axis after exposure to a low-dose pesticide mixture.
 
-Code for the study on pesticide mixture toxicity
+### Abstract
+Health effects of pesticides are not always accurately detected using the current battery of regulatory toxicity tests. We compared standard histopathology and serum biochemistry measures and multi-omics analyses in a subchronic toxicity test of a mixture of six pesticides frequently detected in foodstuffs (azoxystrobin, boscalid, chlorpyrifos, glyphosate, imidacloprid and thiabendazole) in Sprague-Dawley rats. Analysis of water and feed consumption, body weight, histopathology and serum biochemistry showed little effects. Contrastingly, serum and caecum metabolomics revealed that nicotinamide and tryptophan metabolism were affected, which suggested the activation of an oxidative stress response. This was not reflected by gut microbial community composition changes evaluated by shotgun metagenomics. Transcriptomics of the liver showed that 257 genes had their expression changed. Gene functions affected included the regulation of response to steroid hormones and the activation of stress response pathways. Genome-wide DNA methylation analysis of the same liver samples showed that 4,255 CpG sites were differentially methylated. Overall, we demonstrated that in-depth molecular profiling in laboratory animals exposed to low concentrations of pesticides allows the detection of metabolic perturbations which could improve the health risk predictability of chemical assessment.
 
-The study metadata is a table containing all the study identifiers as File S1. 
+### Publication
+Mesnage R, Teixeira M, Mandrioli D, Falcioni L, Ducarmon QR, Zwittink RD, Amiel C, Panoff J, Bourne B, Savage E, Mein CA, Belpoggi F, Antoniou MN (2020). Multi-omics phenotyping of the gut-liver axis allows health risk predictability from in vivo subchronic toxicity test of a low-dose pesticide mixture. BioRxiv. doi: https://doi.org/10.1101/2020.08.25.266528
+
+A R Markdown document has been made available to ensure the full reproducibility of these results: https://mesnage.github.io/mixtox.html 
 
 #### Water consumption	
 
