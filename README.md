@@ -3,8 +3,8 @@ Code for the study on pesticide mixture toxicity
 
 Table of content of supplementary files
 
-S1	Study metadata
-S2	Raw data for the water consumption
+## S1	Study metadata
+## S2	Raw data for the water consumption
 S3	Raw data for the feed consumption
 S4	Raw data for the body weights
 S5	Raw data for serum biochemistry
